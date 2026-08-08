@@ -1,10 +1,12 @@
 """
 Social Media Policy Monitor -- Flask app.
 
-Scope (v1): YouTube only, via the official YouTube Data API v3.
-Architecture is modular so additional platforms can be added later by
-writing a new client module with the same collect_content_for_keyword()
-shape and wiring it into PLATFORM_CLIENTS below.
+Platforms (v1): YouTube, Reddit, Instagram (hashtag search only -- see
+instagram_client.py's docstring for the real constraints on that one).
+Architecture is modular: each platform client exposes
+collect_content_for_keyword(keyword) -> list[dict] with a shared item
+shape, wired in via PLATFORM_CLIENTS below. Adding a platform later means
+writing one new module and adding one line here.
 
 This tool is a REVIEW QUEUE, not a public accusation system: it surfaces
 possible policy-relevant content for a human moderator/researcher to
@@ -17,13 +19,17 @@ from database import init_db
 from models import upsert_account, add_violation, get_flagged_accounts, get_account, log_search
 from classifier import classify
 import youtube_client
+import reddit_client
+import instagram_client
 
 app = Flask(__name__)
 app.config.from_object(Config)
 
-# Registry of available platform clients. Add new platforms here.
+
 PLATFORM_CLIENTS = {
     "YouTube": youtube_client.collect_content_for_keyword,
+    "Reddit": reddit_client.collect_content_for_keyword,
+    "Instagram": instagram_client.collect_content_for_keyword,
 }
 
 init_db()
@@ -48,6 +54,7 @@ def search():
         return redirect(url_for("index"))
 
     errors = []
+    total_flagged = 0
 
     for platform in selected_platforms:
         client_fn = PLATFORM_CLIENTS.get(platform)
@@ -86,9 +93,15 @@ def search():
                 confidence=result["confidence"],
                 timestamp=item.get("timestamp", ""),
             )
+            total_flagged += 1
 
     for e in errors:
         flash(e, "danger")
+
+    if total_flagged:
+        flash(f"Flagged {total_flagged} item(s) for review.", "success")
+    elif not errors:
+        flash("Search completed -- nothing crossed the review threshold.", "info")
 
     return redirect(url_for("results"))
 
