@@ -25,7 +25,7 @@ import instagram_client
 app = Flask(__name__)
 app.config.from_object(Config)
 
-
+# Registry of available platform clients. Add new platforms here.
 PLATFORM_CLIENTS = {
     "YouTube": youtube_client.collect_content_for_keyword,
     "Reddit": reddit_client.collect_content_for_keyword,
@@ -38,6 +38,66 @@ init_db()
 @app.route("/")
 def index():
     return render_template("index.html", platforms=list(PLATFORM_CLIENTS.keys()))
+
+
+@app.route("/analyze-video", methods=["POST"])
+def analyze_video():
+    """
+    Scan a single YouTube video's comments for policy violations.
+    Each flagged comment's author (the commenter, not the video's channel
+    owner) becomes the account on the review queue -- they're the one who
+    actually wrote the text being evaluated.
+    """
+    video_url = (request.form.get("video_url") or "").strip()
+
+    if not video_url:
+        flash("Please paste a YouTube video URL.", "warning")
+        return redirect(url_for("index"))
+
+    video_id = youtube_client.extract_video_id(video_url)
+    if not video_id:
+        flash("Couldn't find a video ID in that URL -- check it's a valid YouTube link.", "warning")
+        return redirect(url_for("index"))
+
+    try:
+        comments = youtube_client.get_video_comments(video_id)
+    except Exception as e:
+        log_search(video_url, "YouTube (video comments)", "error", str(e))
+        flash(f"Couldn't fetch comments: {e}", "danger")
+        return redirect(url_for("index"))
+
+    log_search(video_url, "YouTube (video comments)", "ok", f"{len(comments)} comments collected")
+
+    total_flagged = 0
+    for item in comments:
+        result = classify(item["text"])
+        if not result["flagged"]:
+            continue
+
+        account_id = upsert_account(
+            platform=item["platform"],
+            account_name=item["account"],
+            profile_url=item["profile_url"],
+            risk_category=result["category"],
+            confidence=result["confidence"],
+        )
+        add_violation(
+            account_id=account_id,
+            post_url=item["post_url"],
+            post_text=item["text"],
+            reason=result["reason"],
+            category=result["category"],
+            confidence=result["confidence"],
+            timestamp=item.get("timestamp", ""),
+        )
+        total_flagged += 1
+
+    if total_flagged:
+        flash(f"Flagged {total_flagged} commenter(s) for review.", "success")
+    else:
+        flash("Scan completed -- nothing crossed the review threshold.", "info")
+
+    return redirect(url_for("results"))
 
 
 @app.route("/search", methods=["POST"])

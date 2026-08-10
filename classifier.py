@@ -19,12 +19,14 @@ Both paths return the same shape:
 }
 """
 import re
+import time
 import requests
 from config import Config
 
 PERSPECTIVE_URL = (
     "https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze"
 )
+HUGGINGFACE_URL = f"https://api-inference.huggingface.co/models/{Config.HUGGINGFACE_MODEL}"
 
 # --- Rule-based fallback --------------------------------------------------
 
@@ -110,18 +112,71 @@ def _perspective_classify(text):
     return {"flagged": False, "category": None, "confidence": 0, "reason": ""}
 
 
+# --- Hugging Face Inference API (primary, recommended) --------------------
+# Perspective API stopped accepting new access requests in Feb 2026, so this
+# is the actual working "real classifier" path for new setups. unitary/
+# toxic-bert is publicly hosted, needs only a free HF account + token --
+# no approval process. Get a token at https://huggingface.co/settings/tokens
+
+def _huggingface_classify(text):
+    if not text or not text.strip():
+        return {"flagged": False, "category": None, "confidence": 0, "reason": ""}
+
+    headers = {"Authorization": f"Bearer {Config.HUGGINGFACE_API_TOKEN}"}
+    payload = {"inputs": text[:2000]}
+
+    resp = requests.post(HUGGINGFACE_URL, headers=headers, json=payload, timeout=20)
+
+    if resp.status_code == 503:
+        # Free-tier models cold-start on first call (or after idling) --
+        # HF returns an estimated_time to wait, then it's warm.
+        wait = resp.json().get("estimated_time", 10)
+        time.sleep(min(wait, 20))
+        resp = requests.post(HUGGINGFACE_URL, headers=headers, json=payload, timeout=20)
+
+    if resp.status_code != 200:
+        raise RuntimeError(f"Hugging Face API error ({resp.status_code}): {resp.text[:200]}")
+
+    data = resp.json()
+    scores = data[0] if data and isinstance(data, list) else []
+
+    best_label, best_score = None, 0.0
+    for item in scores:
+        label = item.get("label")
+        score = item.get("score", 0.0)
+        if label in Config.HUGGINGFACE_LABEL_MAP and score > best_score:
+            best_label, best_score = label, score
+
+    if best_label and best_score >= Config.HUGGINGFACE_THRESHOLD:
+        return {
+            "flagged": True,
+            "category": Config.HUGGINGFACE_LABEL_MAP[best_label],
+            "confidence": round(best_score * 100),
+            "reason": f"Hugging Face model ({Config.HUGGINGFACE_MODEL}) scored '{best_label}' at {best_score:.2f}.",
+        }
+
+    return {"flagged": False, "category": None, "confidence": 0, "reason": ""}
+
+
 # --- Public entry point -----------------------------------------------------
 
 def classify(text):
     """
-    Classify a piece of text. Tries Perspective API first (if configured);
-    falls back to rule-based matching on any failure or missing key.
+    Classify a piece of text.
+    Order: Hugging Face (real model, recommended) -> Perspective (legacy,
+    only works if you already had access before Feb 2026) -> rule-based
+    (always works, but coarse -- exists so the app never fully breaks).
     """
+    if Config.HUGGINGFACE_API_TOKEN:
+        try:
+            return _huggingface_classify(text)
+        except Exception:
+            pass  # fall through rather than losing the whole request
+
     if Config.PERSPECTIVE_API_KEY:
         try:
             return _perspective_classify(text)
         except Exception:
-            # Fall through to rule-based rather than losing the whole request.
             pass
 
     return _rule_based_classify(text)

@@ -10,13 +10,28 @@ load_dotenv()
 class Config:
     YOUTUBE_API_KEY = os.environ.get("YOUTUBE_API_KEY", "")
     PERSPECTIVE_API_KEY = os.environ.get("PERSPECTIVE_API_KEY", "")
+    HUGGINGFACE_API_TOKEN = os.environ.get("HUGGINGFACE_API_TOKEN", "")
     SECRET_KEY = os.environ.get("FLASK_SECRET_KEY", "dev-secret-change-me")
     DATABASE_PATH = os.environ.get("DATABASE_PATH", "policy_monitor.db")
 
     # How many videos to pull per keyword search (kept small for free-tier quota).
     MAX_VIDEOS_PER_SEARCH = 8
     # How many comments to pull per video.
-    MAX_COMMENTS_PER_VIDEO = 15
+    MAX_COMMENTS_PER_VIDEO = 50
+
+    # Hugging Face Inference API model + label mapping. unitary/toxic-bert is
+    # a free, publicly-hosted multi-label toxicity classifier -- no gated
+    # access required, unlike Perspective.
+    HUGGINGFACE_MODEL = "unitary/toxic-bert"
+    HUGGINGFACE_THRESHOLD = 0.70
+    HUGGINGFACE_LABEL_MAP = {
+        "identity_hate": "Hate Speech",
+        "threat": "Violence",
+        "insult": "Harassment",
+        "toxic": "Harassment",
+        "severe_toxic": "Harassment",
+        "obscene": "Harassment",
+    }
 
     # Perspective API attributes we request, mapped to human-readable categories.
     PERSPECTIVE_ATTRIBUTES = {
