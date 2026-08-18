@@ -19,6 +19,7 @@ Both paths return the same shape:
 }
 """
 import re
+import sys
 import time
 import requests
 from config import Config
@@ -166,17 +167,21 @@ def classify(text):
     Order: Hugging Face (real model, recommended) -> Perspective (legacy,
     only works if you already had access before Feb 2026) -> rule-based
     (always works, but coarse -- exists so the app never fully breaks).
+
+    Failures are printed to stderr (visible in `render logs` / the Logs
+    tab) rather than silently swallowed -- otherwise there's no way to
+    tell a real "nothing flagged" result apart from a broken API call.
     """
     if Config.HUGGINGFACE_API_TOKEN:
         try:
             return _huggingface_classify(text)
-        except Exception:
-            pass  # fall through rather than losing the whole request
+        except Exception as e:
+            print(f"[classifier] Hugging Face call failed, falling back: {e}", file=sys.stderr)
 
     if Config.PERSPECTIVE_API_KEY:
         try:
             return _perspective_classify(text)
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"[classifier] Perspective call failed, falling back: {e}", file=sys.stderr)
 
     return _rule_based_classify(text)
