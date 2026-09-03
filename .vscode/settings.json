@@ -1,0 +1,5 @@
+{
+    "C_Cpp.default.compilerPath": "cl.exe",
+    "python-envs.defaultEnvManager": "ms-python.python:venv",
+    "python-envs.defaultPackageManager": "ms-python.python:pip"
+}

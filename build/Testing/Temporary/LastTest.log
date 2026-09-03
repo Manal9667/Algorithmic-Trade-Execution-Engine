@@ -1,0 +1,345 @@
+Start testing: Sep 02 20:25 Eastern Summer Time
+----------------------------------------------------------
+1/5 Testing: test_book
+1/5 Test: test_book
+Command: "C:/Social Media Account Filterer/socialpolicy/build/Release/test_book.exe"
+Directory: C:/Social Media Account Filterer/socialpolicy/build
+"test_book" start time: Sep 02 20:25 Eastern Summer Time
+Output:
+----------------------------------------------------------
+Running OrderBook tests...
+
+✓ best_bid() returns value
+✓ best_bid() is highest price
+✓ best bid is 101
+✓ best ask is 100
+✓ mid_price() has value
+✓ mid_price() is correct
+✓ empty book has no best_bid
+✓ empty book has no best_ask
+✓ empty book has no mid_price
+✓ volume at 100 is 150
+✓ volume at 99 is 200
+✓ volume at 101 is 0
+✓ volume before cancel
+✓ cancel returns true
+✓ volume after cancel
+✓ cancel non-existent returns false
+✓ cancel at wrong price returns false
+✓ total volume is 225
+✓ volume after cancel is 175
+✓ get_queue returns non-null
+✓ queue has 1 order
+✓ get_queue returns null for non-existent price
+✓ bid is 99.5
+✓ ask is 100.5
+✓ spread is 1.0
+✓ initially remaining is 100
+✓ after partial fill, remaining is 70
+✓ is_filled() returns true
+✓ after full fill, remaining is 0
+
+Results: 29/29 passed
+✓ All tests passed!
+<end of output>
+Test time =   1.02 sec
+----------------------------------------------------------
+Test Passed.
+"test_book" end time: Sep 02 20:25 Eastern Summer Time
+"test_book" time elapsed: 00:00:01
+----------------------------------------------------------
+
+2/5 Testing: test_engine
+2/5 Test: test_engine
+Command: "C:/Social Media Account Filterer/socialpolicy/build/Release/test_engine.exe"
+Directory: C:/Social Media Account Filterer/socialpolicy/build
+"test_engine" start time: Sep 02 20:25 Eastern Summer Time
+Output:
+----------------------------------------------------------
+Running MatchingEngine tests...
+
+✓ market buy fills
+✓ fill qty is correct
+✓ fill price is ask
+✓ no fills (price too low)
+✓ order rests on book
+✓ two fills at two prices
+✓ first fill at 100.0
+✓ first fill qty 50
+✓ second fill at 100.5
+✓ second fill qty 50
+✓ two fills
+✓ first fill from order 1
+✓ first fill qty 50
+✓ second fill from order 2
+✓ second fill qty 25
+✓ one fill
+✓ fill qty 50
+✓ buy order rested 50
+✓ partial fill
+✓ filled 50, not 100
+✓ one trade recorded
+✓ trade count is 1
+✓ no fills (price too high)
+✓ buy order rested
+✓ no fills (price too low)
+✓ sell order rested
+✓ one fill
+✓ buy_order_id is buy
+✓ sell_order_id is sell
+✓ price is correct
+✓ qty is correct
+
+Results: 31/31 passed
+✓ All tests passed!
+<end of output>
+Test time =   0.48 sec
+----------------------------------------------------------
+Test Passed.
+"test_engine" end time: Sep 02 20:25 Eastern Summer Time
+"test_engine" time elapsed: 00:00:00
+----------------------------------------------------------
+
+3/5 Testing: test_simulator
+3/5 Test: test_simulator
+Command: "C:/Social Media Account Filterer/socialpolicy/build/Release/test_simulator.exe"
+Directory: C:/Social Media Account Filterer/socialpolicy/build
+"test_simulator" start time: Sep 02 20:25 Eastern Summer Time
+Output:
+----------------------------------------------------------
+Running MarketSimulator tests...
+
+✓ initial price is 100
+✓ price changed after ticks
+✓ slippage is 0.001
+✓ larger order has worse ask
+✓ 5 snapshots captured
+✓ snapshot bid matches model
+✓ snapshot ask matches model
+✓ bid is below mid
+✓ ask is above mid
+✓ bid volume comes from model
+✓ ask volume comes from model
+✓ snapshot bid matches model
+✓ snapshot ask matches model
+✓ bid is below mid
+✓ ask is above mid
+✓ bid volume comes from model
+✓ ask volume comes from model
+✓ snapshot bid matches model
+✓ snapshot ask matches model
+✓ bid is below mid
+✓ ask is above mid
+✓ bid volume comes from model
+✓ ask volume comes from model
+✓ snapshot bid matches model
+✓ snapshot ask matches model
+✓ bid is below mid
+✓ ask is above mid
+✓ bid volume comes from model
+✓ ask volume comes from model
+✓ snapshot bid matches model
+✓ snapshot ask matches model
+✓ bid is below mid
+✓ ask is above mid
+✓ bid volume comes from model
+✓ ask volume comes from model
+✓ snapshot bid matches model
+✓ snapshot ask matches model
+✓ bid is below mid
+✓ ask is above mid
+✓ bid volume comes from model
+✓ ask volume comes from model
+✓ snapshot bid matches model
+✓ snapshot ask matches model
+✓ bid is below mid
+✓ ask is above mid
+✓ bid volume comes from model
+✓ ask volume comes from model
+✓ snapshot bid matches model
+✓ snapshot ask matches model
+✓ bid is below mid
+✓ ask is above mid
+✓ bid volume comes from model
+✓ ask volume comes from model
+✓ ask is not stuck at hardcoded 100
+✓ mid stays at 100
+✓ bid is mid minus half spread
+✓ ask is mid plus half spread
+✓ quoted size is 1000
+✓ mid stays at 100
+✓ bid is mid minus half spread
+✓ ask is mid plus half spread
+✓ quoted size is 1000
+✓ mid stays at 100
+✓ bid is mid minus half spread
+✓ ask is mid plus half spread
+✓ quoted size is 1000
+✓ mid stays at 100
+✓ bid is mid minus half spread
+✓ ask is mid plus half spread
+✓ quoted size is 1000
+✓ mid stays at 100
+✓ bid is mid minus half spread
+✓ ask is mid plus half spread
+✓ quoted size is 1000
+✓ book has a bid
+✓ book has an ask
+✓ book bid equals current quoted bid
+✓ book ask equals current quoted ask
+✓ book bid size equals model size
+✓ book ask size equals model size
+✓ one trade
+✓ filled 100
+✓ fill price is the live ask
+
+Results: 83/83 passed
+✓ All tests passed!
+<end of output>
+Test time =   0.44 sec
+----------------------------------------------------------
+Test Passed.
+"test_simulator" end time: Sep 02 20:25 Eastern Summer Time
+"test_simulator" time elapsed: 00:00:00
+----------------------------------------------------------
+
+4/5 Testing: test_algorithms
+4/5 Test: test_algorithms
+Command: "C:/Social Media Account Filterer/socialpolicy/build/Release/test_algorithms.exe"
+Directory: C:/Social Media Account Filterer/socialpolicy/build
+"test_algorithms" start time: Sep 02 20:25 Eastern Summer Time
+Output:
+----------------------------------------------------------
+Running ExecutionAlgorithm tests...
+
+✓ 10 orders generated
+✓ each order qty is 100
+✓ each order qty is 100
+✓ each order qty is 100
+✓ each order qty is 100
+✓ each order qty is 100
+✓ each order qty is 100
+✓ each order qty is 100
+✓ each order qty is 100
+✓ each order qty is 100
+✓ each order qty is 100
+✓ total qty is 1000
+✓ 3 orders
+✓ total is 1000
+✓ first order has remainder
+✓ second order
+✓ third order
+✓ same number of orders
+✓ orders have same qty
+✓ orders have same qty
+✓ orders have same qty
+✓ orders have same qty
+✓ 4 orders
+✓ first order ~400
+✓ second order ~300
+✓ third order ~200
+✓ fourth order ~100
+✓ total is 1000
+✓ 2 orders
+✓ first order 700
+✓ second order 300
+✓ TWAP name correct
+✓ VWAP name correct
+✓ Adaptive name correct
+✓ order id
+✓ order id
+✓ order id
+✓ order id
+✓ order id
+✓ side is sell
+✓ type is limit
+✓ price is correct
+✓ side is sell
+✓ type is limit
+✓ price is correct
+✓ 100 orders
+✓ total qty is 1M
+✓ 5 orders
+✓ total qty is 1000
+
+Results: 49/49 passed
+✓ All tests passed!
+<end of output>
+Test time =   0.40 sec
+----------------------------------------------------------
+Test Passed.
+"test_algorithms" end time: Sep 02 20:26 Eastern Summer Time
+"test_algorithms" time elapsed: 00:00:00
+----------------------------------------------------------
+
+5/5 Testing: test_integrate
+5/5 Test: test_integrate
+Command: "C:/Social Media Account Filterer/socialpolicy/build/Release/test_integrate.exe"
+Directory: C:/Social Media Account Filterer/socialpolicy/build
+"test_integrate" start time: Sep 02 20:26 Eastern Summer Time
+Output:
+----------------------------------------------------------
+
+╔==================================================╗
+║  Integration Tests (Phase 6)║
+╚==================================================╝
+
+Test 1: Complete Order-to-Trade Workflow
+─────────────────────────────────────────
+✓ 2 trades generated (crosses 2 price levels)
+✓ trade 1 qty is 100
+✓ trade 2 qty is 50
+✓ trade 1 price is best ask (100.0)
+✓ trade 2 price is 100.5
+
+Test 2: TWAP Algorithm Integration
+─────────────────────────────────────────
+✓ 10 child orders
+✓ all 1000 shares filled
+✓ total trades recorded
+
+Test 3: VWAP Algorithm Integration
+─────────────────────────────────────────
+✓ 4 child orders
+✓ first order 400
+✓ second order 300
+✓ third order 200
+✓ fourth order 100
+✓ total is 1000
+
+Test 4: Market Simulator Integration
+─────────────────────────────────────────
+✓ price evolved
+✓ snapshots captured
+✓ slippage calculated
+
+Test 5: Full Pipeline (Algorithm → Simulator → Analysis)
+─────────────────────────────────────────
+✓ 10 TWAP slices
+Trade price: $102.138 qty: 100
+Trade price: $102.267 qty: 100
+Trade price: $102.221 qty: 100
+Trade price: $101.2 qty: 100
+Trade price: $100.368 qty: 100
+Trade price: $102.158 qty: 100
+Trade price: $102.442 qty: 100
+Trade price: $102.017 qty: 100
+Trade price: $102.943 qty: 100
+Trade price: $103.255 qty: 100
+✓ trades were generated
+✓ some quantity was filled
+✓ average price is within observed asks
+    Final price: $102.101
+    Slippage: 2.10103%
+
+Results: 21/21 passed
+✓ All integration tests passed!
+<end of output>
+Test time =   0.51 sec
+----------------------------------------------------------
+Test Passed.
+"test_integrate" end time: Sep 02 20:26 Eastern Summer Time
+"test_integrate" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Sep 02 20:26 Eastern Summer Time

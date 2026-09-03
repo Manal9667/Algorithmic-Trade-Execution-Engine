@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Social Media Account Filterer\socialpolicy\build\CMakeFiles\96d2994beda46381879adacf9bf2dab1\RUN_TESTS_force.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{ED185DCE-7991-3B1F-A2C9-E8FDD37B9E1C}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
