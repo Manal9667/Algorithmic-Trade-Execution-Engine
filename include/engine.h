@@ -60,6 +60,8 @@ public:
      * Cancel a resting order. Returns true if it was found and removed.
      */
     bool cancel_order(uint64_t order_id, OrderSide side, double price);
+
+    void clear_book() { book.clear(); }
     
     /**
      * Match a market order

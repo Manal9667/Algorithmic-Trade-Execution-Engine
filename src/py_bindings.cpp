@@ -2,6 +2,7 @@
 #include <pybind11/stl.h>
 #include "engine.h"
 #include "market.h"
+#include "execution.h"
 
 namespace py = pybind11;
 
@@ -75,18 +76,70 @@ PYBIND11_MODULE(executor, m) {
         .def_readwrite("sell_order_id", &Trade::sell_order_id)
         .def_readwrite("price", &Trade::price)
         .def_readwrite("qty", &Trade::qty);
+
+    py::class_<BookLevel>(m, "BookLevel")
+        .def(py::init<>())
+        .def_readwrite("price", &BookLevel::price)
+        .def_readwrite("qty", &BookLevel::qty);
     
     /**
      * MarketSnapshot struct
      */
     py::class_<MarketSnapshot>(m, "MarketSnapshot")
         .def(py::init<>())
+        .def_readwrite("last_price", &MarketSnapshot::last_price)
         .def_readwrite("mid_price", &MarketSnapshot::mid_price)
         .def_readwrite("bid", &MarketSnapshot::bid)
         .def_readwrite("ask", &MarketSnapshot::ask)
         .def_readwrite("bid_volume", &MarketSnapshot::bid_volume)
         .def_readwrite("ask_volume", &MarketSnapshot::ask_volume)
-        .def_readwrite("timestamp_ms", &MarketSnapshot::timestamp_ms);
+        .def_readwrite("volume", &MarketSnapshot::volume)
+        .def_readwrite("bar_volume", &MarketSnapshot::bar_volume)
+        .def_readwrite("timestamp_ms", &MarketSnapshot::timestamp_ms)
+        .def_readwrite("bids", &MarketSnapshot::bids)
+        .def_readwrite("asks", &MarketSnapshot::asks);
+
+    py::class_<VectorMarketSource>(m, "VectorMarketSource")
+        .def(py::init<std::vector<MarketState>>())
+        .def("next", &VectorMarketSource::next)
+        .def("reset", &VectorMarketSource::reset);
+
+    py::class_<RealtimeMarketSource>(m, "RealtimeMarketSource")
+        .def(py::init<>())
+        .def("publish", &RealtimeMarketSource::publish)
+        .def("next", &RealtimeMarketSource::next)
+        .def("reset", &RealtimeMarketSource::reset);
+
+    py::class_<CsvMarketSource>(m, "CsvMarketSource")
+        .def(py::init<std::string>())
+        .def("next", &CsvMarketSource::next)
+        .def("reset", &CsvMarketSource::reset)
+        .def("ok", &CsvMarketSource::ok);
+
+    py::class_<ExecutionFill>(m, "ExecutionFill")
+        .def_readonly("trade", &ExecutionFill::trade)
+        .def_readonly("timestamp_ms", &ExecutionFill::timestamp_ms)
+        .def_readonly("bid", &ExecutionFill::bid)
+        .def_readonly("ask", &ExecutionFill::ask)
+        .def_readonly("market_volume", &ExecutionFill::market_volume);
+
+    py::class_<ExecutionResult>(m, "ExecutionResult")
+        .def_readonly("requested_quantity", &ExecutionResult::requested_quantity)
+        .def_readonly("filled_quantity", &ExecutionResult::filled_quantity)
+        .def_readonly("arrival_price", &ExecutionResult::arrival_price)
+        .def_readonly("average_execution_price", &ExecutionResult::average_execution_price)
+        .def_readonly("market_vwap", &ExecutionResult::market_vwap)
+        .def_readonly("fill_rate", &ExecutionResult::fill_rate)
+        .def_readonly("slippage", &ExecutionResult::slippage)
+        .def_readonly("implementation_shortfall", &ExecutionResult::implementation_shortfall)
+        .def_readonly("vwap_deviation", &ExecutionResult::vwap_deviation)
+        .def_readonly("completion_time_ms", &ExecutionResult::completion_time_ms)
+        .def_readonly("fills", &ExecutionResult::fills);
+
+    py::class_<ExecutionSession>(m, "ExecutionSession")
+        .def(py::init<>())
+        .def("run", &ExecutionSession::run)
+        .def("engine", &ExecutionSession::engine, py::return_value_policy::reference_internal);
     
     // ========================================================================
     // CLASSES
@@ -166,6 +219,7 @@ PYBIND11_MODULE(executor, m) {
         .def("get_engine", &MarketSimulator::get_engine, py::return_value_policy::reference_internal)
         .def("get_current_price", &MarketSimulator::get_current_price)
         .def("get_snapshots", &MarketSimulator::get_snapshots)
+        .def("snapshot_source", &MarketSimulator::snapshot_source)
         .def("calculate_slippage", &MarketSimulator::calculate_slippage)
         .def("calculate_market_impact", &MarketSimulator::calculate_market_impact);
 }

@@ -1,5 +1,6 @@
 #include "market_data.h"
 
+#include <algorithm>
 #include <fstream>
 #include <sstream>
 #include <unordered_map>
@@ -59,6 +60,28 @@ void VectorMarketSource::reset() {
     index_ = 0;
 }
 
+bool RealtimeMarketSource::publish(MarketState state) {
+    if (!states_.empty() && state.timestamp_ms < last_timestamp_ms_) {
+        return false;
+    }
+    normalize_market_state(state);
+    last_timestamp_ms_ = state.timestamp_ms;
+    states_.push_back(std::move(state));
+    return true;
+}
+
+bool RealtimeMarketSource::next(MarketState& out) {
+    if (index_ >= states_.size()) {
+        return false;
+    }
+    out = states_[index_++];
+    return true;
+}
+
+void RealtimeMarketSource::reset() {
+    index_ = 0;
+}
+
 CsvMarketSource::CsvMarketSource(std::string path)
     : path_(std::move(path)) {
     load();
@@ -84,7 +107,7 @@ void CsvMarketSource::load() {
         positions[headers[i]] = i;
     }
     for (const auto& header : required) {
-        if (!positions.contains(header)) {
+        if (positions.find(header) == positions.end()) {
             return;
         }
     }
@@ -110,13 +133,13 @@ void CsvMarketSource::load() {
             state.bid_volume = std::stoull(field("bid_size"));
             state.ask_volume = std::stoull(field("ask_size"));
             state.volume = std::stoull(field("volume"));
-            if (positions.contains("bar_volume")) {
+            if (positions.find("bar_volume") != positions.end()) {
                 state.bar_volume = std::stoull(field("bar_volume"));
             }
-            if (positions.contains("bid_depth")) {
+            if (positions.find("bid_depth") != positions.end()) {
                 state.bids = parse_depth(field("bid_depth"));
             }
-            if (positions.contains("ask_depth")) {
+            if (positions.find("ask_depth") != positions.end()) {
                 state.asks = parse_depth(field("ask_depth"));
             }
             normalize_market_state(state);
@@ -126,6 +149,10 @@ void CsvMarketSource::load() {
             return;
         }
     }
+    std::stable_sort(states_.begin(), states_.end(),
+                     [](const MarketState& left, const MarketState& right) {
+                         return left.timestamp_ms < right.timestamp_ms;
+                     });
     loaded_ = true;
 }
 

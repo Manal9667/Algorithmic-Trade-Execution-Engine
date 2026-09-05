@@ -110,6 +110,8 @@ public:
     std::deque<Order>* get_queue(double price, OrderSide side);
     
     void remove_level(double price, OrderSide side);
+
+    void clear();
     
     void print_state() const;
 };

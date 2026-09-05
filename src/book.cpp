@@ -230,3 +230,8 @@ void OrderBook::print_state() const {
     }
     std::cout << std::endl;
 }
+
+void OrderBook::clear() {
+    bids.clear();
+    asks.clear();
+}

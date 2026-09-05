@@ -2,6 +2,7 @@
 #define EXECUTOR_MARKET_DATA_H
 
 #include "types.h"
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -55,6 +56,19 @@ public:
 private:
     std::vector<MarketState> states_;
     size_t index_ = 0;
+};
+
+class RealtimeMarketSource : public MarketDataSource {
+public:
+    bool publish(MarketState state);
+    bool next(MarketState& out) override;
+    void reset() override;
+    std::string name() const override { return "realtime"; }
+
+private:
+    std::vector<MarketState> states_;
+    size_t index_ = 0;
+    uint64_t last_timestamp_ms_ = 0;
 };
 
 /**

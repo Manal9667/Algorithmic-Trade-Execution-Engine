@@ -18,6 +18,10 @@ std::vector<Order> TWAPAlgorithm::generate_orders(
     int num_slices
 ) {
     std::vector<Order> orders;
+
+    if (num_slices <= 0 || total_qty == 0) {
+        return orders;
+    }
     
     // Calculate slice size
     uint64_t slice_qty = total_qty / num_slices;
@@ -58,6 +62,10 @@ std::vector<Order> VWAPAlgorithm::generate_orders(
 ) {
     std::vector<Order> orders;
 
+    if (num_slices <= 0 || total_qty == 0) {
+        return orders;
+    }
+
     // If no profile, use uniform (default to TWAP behavior)
     if (volume_profile.empty()) {
         uint64_t slice_qty = total_qty / num_slices;
@@ -91,7 +99,15 @@ std::vector<Order> VWAPAlgorithm::generate_orders(
     double total_profile_volume = 0.0;
 
     for (size_t i = 0; i < num_profile_slices; ++i) {
-        total_profile_volume += volume_profile[i];
+        if (volume_profile[i] > 0.0) {
+            total_profile_volume += volume_profile[i];
+        }
+    }
+
+    if (total_profile_volume <= 0.0) {
+        TWAPAlgorithm twap;
+        return twap.generate_orders(
+            parent_order_id, side, total_qty, limit_price, num_slices);
     }
 
     uint64_t total_assigned = 0;
@@ -99,8 +115,9 @@ std::vector<Order> VWAPAlgorithm::generate_orders(
     for (size_t i = 0; i < num_profile_slices; ++i) {
 
         // Convert the profile value into a normalized fraction.
-        double fraction =
-            volume_profile[i] / total_profile_volume;
+        double fraction = volume_profile[i] > 0.0
+            ? volume_profile[i] / total_profile_volume
+            : 0.0;
 
         uint64_t qty = static_cast<uint64_t>(
             total_qty * fraction

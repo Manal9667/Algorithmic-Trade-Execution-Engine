@@ -10,8 +10,9 @@ constexpr uint64_t kSyntheticIdBase = 1000000000;
 /**
  * MarketSimulator constructor
  */
-MarketSimulator::MarketSimulator(double initial_price, const LiquidityModel& liq)
-    : liquidity(liq), current_price(initial_price), rng(std::random_device{}()),
+MarketSimulator::MarketSimulator(double initial_price, const LiquidityModel& liq,
+                                                                 uint32_t seed)
+        : liquidity(liq), current_price(initial_price), rng(seed),
       next_synthetic_id(kSyntheticIdBase) {}
 
 /**
@@ -95,20 +96,27 @@ void MarketSimulator::run_backtest(
         refresh_synthetic_quotes();
 
         const uint64_t qty = liquidity.quoted_quantity();
-        snapshots.push_back({
-            current_price,
-            synthetic_bid_price,
-            synthetic_ask_price,
-            qty,
-            qty,
-            static_cast<uint64_t>(tick * 100)
-        });
+        MarketSnapshot snapshot;
+        snapshot.last_price = current_price;
+        snapshot.mid_price = current_price;
+        snapshot.bid = synthetic_bid_price;
+        snapshot.ask = synthetic_ask_price;
+        snapshot.bid_volume = qty;
+        snapshot.ask_volume = qty;
+        snapshot.timestamp_ms = static_cast<uint64_t>(tick * 100);
+        snapshot.bids = {{synthetic_bid_price, qty}};
+        snapshot.asks = {{synthetic_ask_price, qty}};
+        snapshots.push_back(std::move(snapshot));
 
         if (order_idx < orders.size()) {
             engine.submit_order(orders[order_idx]);
             ++order_idx;
         }
     }
+}
+
+VectorMarketSource MarketSimulator::snapshot_source() const {
+    return VectorMarketSource(snapshots);
 }
 
 /**

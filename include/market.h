@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "engine.h"
+#include "market_data.h"
 #include <vector>
 #include <random>
 #include <optional>
@@ -13,15 +14,6 @@
  * Captures the state of the market at a point in time.
  * Used by the simulator to track price evolution.
  */
-struct MarketSnapshot {
-    double mid_price;           // Mid price at this moment
-    double bid;                 // Best bid
-    double ask;                 // Best ask
-    uint64_t bid_volume;        // Volume at best bid
-    uint64_t ask_volume;        // Volume at best ask
-    uint64_t timestamp_ms;      // Time in milliseconds
-};
-
 /**
  * LiquidityModel
  * 
@@ -155,7 +147,8 @@ public:
     /**
      * Constructor
      */
-    MarketSimulator(double initial_price, const LiquidityModel& liq);
+    MarketSimulator(double initial_price, const LiquidityModel& liq,
+                    uint32_t seed = std::random_device{}());
     
     /**
      * Run a backtest: execute orders over time
@@ -183,6 +176,8 @@ public:
      * Get all market snapshots captured during backtest
      */
     const std::vector<MarketSnapshot>& get_snapshots() const { return snapshots; }
+
+    VectorMarketSource snapshot_source() const;
     
     /**
      * Calculate slippage: (actual_price - arrival_price) / arrival_price

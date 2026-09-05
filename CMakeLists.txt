@@ -5,8 +5,9 @@ cmake_minimum_required(VERSION 3.15)
 project(executor)
 
 # C++ standard: use C++17
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # ============================================================================
 # FIND PYTHON (required for bindings)
@@ -28,6 +29,7 @@ find_package(pybind11 CONFIG REQUIRED)
 add_library(executor_lib
     src/book.cpp
     src/engine.cpp
+    src/execution.cpp
     src/market_data.cpp
     src/simulator.cpp
     src/algorithms.cpp
@@ -83,6 +85,10 @@ add_test(NAME test_algorithms COMMAND test_algorithms)
 add_executable(test_integrate tests/test_integrate.cpp)
 target_link_libraries(test_integrate executor_lib)
 add_test(NAME test_integrate COMMAND test_integrate)
+
+add_executable(test_phase tests/test_phase.cpp)
+target_link_libraries(test_phase executor_lib)
+add_test(NAME test_phase COMMAND test_phase)
 
 # ============================================================================
 # BENCHMARKS (Phase 6)
